@@ -20,6 +20,11 @@ namespace Words
         Get,
 
         /// <summary>
+        /// Allows output of Words to be piped back into words. Useful for scrabble.
+        /// </summary>
+        Filter,
+
+        /// <summary>
         /// Gets a list of solutions fitting the current known letters.
         /// </summary>
         Query
@@ -31,12 +36,12 @@ namespace Words
         static readonly int _minimumLength = Int32.Parse(ConfigurationManager.AppSettings["MinimumLength"]);
         static readonly int _maximumLength = Int32.Parse(ConfigurationManager.AppSettings["MaximumLength"]);
         static readonly WordMapComparer _comparer = new WordMapComparer();
-        static readonly Lazy<IList<WordMap>> _wordList = new Lazy<IList<WordMap>>(() => GetWords().Where(word => word.Length >= _minimumLength && word.Length <= _maximumLength).Select(WordMap.Build).ToList());
 
         static IEnumerable<WordMap> WordList 
         {
             get { return _wordList.Value; }
         }
+        static Lazy<IList<WordMap>> _wordList = new Lazy<IList<WordMap>>(() => CreateMaps(ReadFiles()));
 
         static void Main(string[] args)
         {
@@ -66,6 +71,10 @@ namespace Words
 
                 case Command.Get:
                     Get(args.ToList());
+                    return;
+
+                case Command.Filter:
+                    Filter(args.ToList());
                     return;
 
                 case Command.Query:
@@ -99,6 +108,12 @@ namespace Words
             }
         }
 
+        static void Filter(IList<string> args)
+        {
+            _wordList = new Lazy<IList<WordMap>>(() => CreateMaps(ReadStandardIn()));
+            Query(args);
+        }
+
         static void Query(IList<string> args)
         {
             var query = args[0].TrimStart('/').ToLower(); // / is used to signal a query without passing a command parameter
@@ -116,7 +131,7 @@ namespace Words
             }
         }
 
-        static IEnumerable<string> GetWords()
+        static IEnumerable<string> ReadFiles()
         {
             if (Directory.Exists(_wordListPath))
                 return Directory.EnumerateFiles(_wordListPath)
@@ -124,6 +139,18 @@ namespace Words
                     .Distinct();
 
             else throw new ApplicationException("Could not read word lists.");
+        }
+
+        static IEnumerable<string> ReadStandardIn()
+        {
+            string line;
+            while (!String.IsNullOrWhiteSpace(line = Console.ReadLine()))
+                yield return line;
+        }
+
+        static IList<WordMap> CreateMaps(IEnumerable<string> words)
+        {
+            return words.Where(word => word.Length >= _minimumLength && word.Length <= _maximumLength).Select(WordMap.Build).ToList();
         }
     }
 }
