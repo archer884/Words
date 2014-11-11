@@ -37,10 +37,10 @@ namespace Words
         {
             if (!args.Any() || args.All(String.IsNullOrWhiteSpace))
             {
-                return;
-                
-                // for testing
-                //args = new[] { "/s....cs" };
+                foreach (var word in _wordList.Select(w => w.Word))
+                {
+                    Console.WriteLine(word);
+                }
             }
 
             Command command;
