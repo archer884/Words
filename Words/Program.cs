@@ -30,14 +30,19 @@ namespace Words
         static readonly string _wordListPath = ConfigurationManager.AppSettings["WordListPath"];
         static readonly int _minimumLength = Int32.Parse(ConfigurationManager.AppSettings["MinimumLength"]);
         static readonly int _maximumLength = Int32.Parse(ConfigurationManager.AppSettings["MaximumLength"]);
-        static readonly IList<WordMap> _wordList = GetWords().Where(word => word.Length >= _minimumLength && word.Length <= _maximumLength).Select(WordMap.Build).ToList();
         static readonly WordMapComparer _comparer = new WordMapComparer();
+        static readonly Lazy<IList<WordMap>> _wordList = new Lazy<IList<WordMap>>(() => GetWords().Where(word => word.Length >= _minimumLength && word.Length <= _maximumLength).Select(WordMap.Build).ToList());
+
+        static IEnumerable<WordMap> WordList 
+        {
+            get { return _wordList.Value; }
+        }
 
         static void Main(string[] args)
         {
             if (!args.Any() || args.All(String.IsNullOrWhiteSpace))
             {
-                foreach (var word in _wordList.Select(w => w.Word))
+                foreach (var word in WordList.Select(w => w.Word))
                 {
                     Console.WriteLine(word);
                 }
@@ -83,8 +88,7 @@ namespace Words
             }
 
             var source = WordMap.Build(args.Single());
-            var validWords = _wordList
-                .AsParallel()
+            var validWords = WordList.AsParallel()
                 .Where(target => source.Map.Contains(target.Map))
                 .OrderByDescending(target => target, _comparer) // in order of difficulty
                 .ThenByDescending(target => target.Word);       // in reverse alphabetical order
@@ -101,8 +105,7 @@ namespace Words
             var source = WordMap.Build(query);
             var exclude = String.Format("[^{0}]", String.Concat(args.Count > 1 ? source.Letters.Concat(args[1]) : source.Letters));
             var regex = new Regex(String.Format("^{0}$", query).Replace(".", exclude), RegexOptions.Compiled|RegexOptions.IgnoreCase);
-            var validWords = _wordList
-                .AsParallel()
+            var validWords = WordList.AsParallel()
                 .Where(target => regex.IsMatch(target.Word) && source.Word.IndistinctIntersect(target.Word).SequenceEqual(source.Letters))
                 .OrderByDescending(target => target, _comparer) // in order of difficulty
                 .ThenBy(target => target.Word);                 // in alphabetical order
