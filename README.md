@@ -7,7 +7,7 @@ In a regex, the solution is an exclusive group: `[^not]`. So instead of putting 
 
 Hell no.
 
-Words handles that stuff for you. Better still, it also handles *blanks* -- those empty tiles you get in games like scrabble -- which are almost impossible to deal with in good ol' fashioned regular expressions. And at the end of the day, you can *still* use Select-String (or awk, or grep, or grope, or... whatever) to filter output from Words, and you can even pipe that output back into Words for another go if you really want to. That's because I'm chill like that.
+Words handles that stuff for you. Better still, it also handles *blanks*--those empty tiles you get in crossword-y games--which are almost impossible to deal with in good ol' fashioned regular expressions. And at the end of the day, you can still use Select-String (or grep, or grope, or... whatever the hell kids are doing nowadays) to filter output from Words, and you can even pipe that output back into Words for another go if you really want to. That's because I'm chill like that.
 
 ## Setup ##
 
@@ -40,7 +40,7 @@ Words knows five (five? I think it's five... You can read the source code if you
 4. Add
 5. Remove
 
-Ok, it's four. I haven't added the fifth yet. Sorry. Whatever. Anyway, if you run Words without any arguments, all it does is print its word banks to the screen--which is handy if you also want to be able to Select-String/grep/awk/molest your word bank instead of, you know, searching it with Words.
+Ok, it's four. I haven't added the fifth yet. Sorry. Whatever. Anyway, if you run Words without any arguments, all it does is print its word banks to the screen--which is handy if you also want to be able to Select-String/grep/grope/molest your word bank instead of, you know, searching it with Words.
 
 Anyway, lemme show you how to use the commands.
 
