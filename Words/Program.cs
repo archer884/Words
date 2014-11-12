@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Words
 {
@@ -45,20 +44,21 @@ namespace Words
 
         static void Main(string[] args)
         {
+            args = new[] { "1/ppla" };
+
             if (!args.Any() || args.All(String.IsNullOrWhiteSpace))
-            {
                 foreach (var word in WordList.Select(w => w.Word))
-                {
                     Console.WriteLine(word);
-                }
+
+            else
+            {
+                Command command;
+                bool commandIncluded = false;
+                if (!(commandIncluded = Enum.TryParse<Command>(args[0], true, out command)))
+                    command = args[0][0] == '/' ? Command.Query : Command.Get;
+
+                RunCommand(command, args.Skip(commandIncluded ? 1 : 0));
             }
-
-            Command command;
-            bool commandIncluded = false;
-            if (!(commandIncluded = Enum.TryParse<Command>(args[0], true, out command)))
-                command = args[0][0] == '/' ? Command.Query : Command.Get;
-
-            RunCommand(command, args.Skip(commandIncluded ? 1 : 0));
         }
 
         static void RunCommand(Command command, IEnumerable<string> args)
@@ -96,9 +96,12 @@ namespace Words
                 return;
             }
 
-            var source = WordMap.Build(args.Single());
+            var input = args[0].Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var wild = input.Length > 1 ? Int32.Parse(input[0]) : 0;
+            var query = input.Length > 1 ? input[1] : input[0];
+            var source = WordMap.Build(query);
             var validWords = WordList.AsParallel()
-                .Where(target => source.Map.Contains(target.Map))
+                .Where(target => source.Map.Contains(target.Map, wild))
                 .OrderByDescending(target => target, _comparer) // in order of difficulty
                 .ThenByDescending(target => target.Word);       // in reverse alphabetical order
 
@@ -116,12 +119,11 @@ namespace Words
 
         static void Query(IList<string> args)
         {
-            var query = args[0].TrimStart('/').ToLower(); // / is used to signal a query without passing a command parameter
-            var source = WordMap.Build(query);
-            var exclude = String.Format("[^{0}]", String.Concat(args.Count > 1 ? source.Letters.Concat(args[1]) : source.Letters));
-            var regex = new Regex(String.Format("^{0}$", query).Replace(".", exclude), RegexOptions.Compiled|RegexOptions.IgnoreCase);
-            var validWords = WordList.AsParallel()
-                .Where(target => regex.IsMatch(target.Word) && source.Word.IndistinctIntersect(target.Word).SequenceEqual(source.Letters))
+            var query = args[0].TrimStart('/');
+            var excludes = new HashSet<char>((args.Count > 1 ? args[1] : Enumerable.Empty<char>()).Concat(query.Where(Char.IsLetter)).Distinct());
+
+            var validWords = WordList//.AsParallel()
+                .Where(target => query.SequenceEqual(target.Word, excludes))
                 .OrderByDescending(target => target, _comparer) // in order of difficulty
                 .ThenBy(target => target.Word);                 // in alphabetical order
 

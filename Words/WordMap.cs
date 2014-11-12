@@ -13,9 +13,31 @@ namespace Words
                 .Where(p => p.a.Equals(p.b)).Select(p => p.a);
         }
 
-        public static bool Contains(this IDictionary<char, int> map, IDictionary<char, int> other)
+        public static bool SequenceEqual(this string query, string other, ISet<char> exclude = null)
         {
-            return other.All(kvOther => map.ContainsKey(kvOther.Key) && map[kvOther.Key] >= kvOther.Value);
+            if (query.Length != other.Length)
+                return false;
+
+            exclude = exclude ?? new HashSet<char>(exclude.Concat(query.Where(Char.IsLetter)).Distinct());
+            
+            for (int i = 0; i < other.Length; i++)
+            {
+                if (query[i] == other[i])
+                    continue;
+
+                if (query[i] == '.' && !exclude.Contains(other[i]))
+                    continue;
+
+                return false;
+            }
+            return true;
+        }
+
+        public static bool Contains(this IDictionary<char, int> map, IDictionary<char, int> other, int wild = 0)
+        {
+            var wildHits = 0;
+
+            return other.All(kvOther => (map.ContainsKey(kvOther.Key) && map[kvOther.Key] >= kvOther.Value) || wildHits++ < wild);
         }
     }
 
