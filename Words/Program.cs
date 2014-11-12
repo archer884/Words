@@ -44,8 +44,6 @@ namespace Words
 
         static void Main(string[] args)
         {
-            args = new[] { "1/ppla" };
-
             if (!args.Any() || args.All(String.IsNullOrWhiteSpace))
                 foreach (var word in WordList.Select(w => w.Word))
                     Console.WriteLine(word);

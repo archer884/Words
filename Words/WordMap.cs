@@ -6,13 +6,6 @@ namespace Words
 {
     public static class WordMapExtensions
     {
-        public static IEnumerable<T> IndistinctIntersect<T>(this IEnumerable<T> collection, IEnumerable<T> other)
-        {
-            return collection
-                .Zip(other, (a, b) => new { a, b })
-                .Where(p => p.a.Equals(p.b)).Select(p => p.a);
-        }
-
         public static bool SequenceEqual(this string query, string other, ISet<char> exclude = null)
         {
             if (query.Length != other.Length)
@@ -50,7 +43,6 @@ namespace Words
         {
             get { return Word.Where(Char.IsLetter); }
         }
-
 
         public WordMap(string word)
         {
