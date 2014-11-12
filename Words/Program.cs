@@ -120,7 +120,7 @@ namespace Words
             var query = args[0].TrimStart('/');
             var excludes = new HashSet<char>((args.Count > 1 ? args[1] : Enumerable.Empty<char>()).Concat(query.Where(Char.IsLetter)).Distinct());
 
-            var validWords = WordList//.AsParallel()
+            var validWords = WordList.AsParallel()
                 .Where(target => query.SequenceEqual(target.Word, excludes))
                 .OrderByDescending(target => target, _comparer) // in order of difficulty
                 .ThenBy(target => target.Word);                 // in alphabetical order
