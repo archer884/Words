@@ -98,6 +98,7 @@ namespace Words
             var wild = input.Length > 1 ? Int32.Parse(input[0]) : 0;
             var query = input.Length > 1 ? input[1] : input[0];
             var source = WordMap.Build(query);
+
             var validWords = WordList.AsParallel()
                 .Where(target => source.Map.Contains(target.Map, wild))
                 .OrderByDescending(target => target, _comparer) // in order of difficulty
